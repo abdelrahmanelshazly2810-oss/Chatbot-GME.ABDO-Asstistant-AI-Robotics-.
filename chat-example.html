@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GME.ABDO Chat UI Example</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #1a1a1a;
+            --primary: #10b981;
+            --text: #ffffff;
+            --muted: #666;
+            --user-bubble: #10b981;
+            --bot-bubble: #262626;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 600px;
+            background: var(--card);
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .messages-area {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            scroll-behavior: smooth;
+        }
+
+        .bubble {
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-bubble {
+            align-self: flex-start;
+            background: var(--bot-bubble);
+            border-radius: 1rem 1rem 1rem 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .user-bubble {
+            align-self: flex-end;
+            background: var(--user-bubble);
+            color: white;
+            border-radius: 1rem 1rem 0 1rem;
+        }
+
+        .quick-replies {
+            padding: 0 1.5rem 1rem;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .reply-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .reply-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .input-area {
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 10px 15px;
+            color: white;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .typing {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="status-dot"></div>
+            <div style="font-weight: bold;">GME.ABDO AI</div>
+        </div>
+
+        <div class="messages-area" id="chat-box">
+            <div class="bubble bot-bubble">
+                Welcome to your <b>Robotics Assistant</b>! 🤖<br><br>
+                How can I help you with your engineering journey today? 🚀
+            </div>
+        </div>
+
+        <div class="typing" id="typing-indicator">AI is thinking...</div>
+
+        <div class="quick-replies">
+            <button class="reply-btn" onclick="sendQuick('What is ROS2?')">🤖 ROS2</button>
+            <button class="reply-btn" onclick="sendQuick('Watch Academy')">📺 Academy</button>
+            <button class="reply-btn" onclick="sendQuick('PID Control')">⚙️ PID</button>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." onkeypress="handleKey(event)">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const typing = document.getElementById('typing-indicator');
+
+        function addMessage(text, role) {
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${role}-bubble`;
+            bubble.innerHTML = text;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            userInput.value = '';
+
+            // Simulate AI response
+            typing.style.display = 'block';
+            setTimeout(() => {
+                typing.style.display = 'none';
+                addMessage("That's a great question about robotics! ⚙️ I'm analyzing your request now...", 'bot');
+            }, 1500);
+        }
+
+        function sendQuick(text) {
+            userInput.value = text;
+            sendMessage();
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>

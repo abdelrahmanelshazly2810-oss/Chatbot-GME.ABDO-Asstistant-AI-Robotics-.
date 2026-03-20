@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Interaction Chatbot Example</title>
+    <style>
+        :root {
+            --primary: #4285F4;
+            --bg: #f8f9fa;
+            --text: #202124;
+            --accent: #EA4335;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 450px;
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            border-radius: 0.8rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        button.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .chat-box {
+            background: #f1f3f4;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.8rem;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .status {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h2 id="title">Voice AI</h2>
+            <div class="controls">
+                <button id="lang-toggle" onclick="toggleLanguage()">العربية</button>
+            </div>
+        </div>
+
+        <div class="chat-box" id="chat-display">
+            Click the microphone to start speaking!
+        </div>
+
+        <div class="input-group">
+            <button id="mic-btn" onclick="toggleMic()">🎤 Speak</button>
+            <input type="text" id="chat-input" placeholder="Type or speak...">
+            <button onclick="send()">Send</button>
+        </div>
+
+        <div class="status" id="status-text">Ready</div>
+    </div>
+
+    <script>
+        const translations = {
+            en: {
+                title: "Voice AI",
+                toggle: "العربية",
+                welcome: "Click the microphone to start speaking!",
+                placeholder: "Type or speak...",
+                micStart: "🎤 Speak",
+                micStop: "🛑 Stop",
+                statusReady: "Ready",
+                statusListening: "Listening...",
+                dir: "ltr",
+                lang: "en-US"
+            },
+            ar: {
+                title: "الذكاء الاصطناعي الصوتي",
+                toggle: "English",
+                welcome: "انقر على الميكروفون لبدء التحدث!",
+                placeholder: "اكتب أو تحدث...",
+                micStart: "🎤 تحدث",
+                micStop: "🛑 إيقاف",
+                statusReady: "جاهز",
+                statusListening: "جاري الاستماع...",
+                dir: "rtl",
+                lang: "ar-SA"
+            }
+        };
+
+        let currentLang = 'en';
+        let isListening = false;
+        let recognition;
+
+        // Initialize Speech Recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chat-input').value = transcript;
+                stopMic();
+                send();
+            };
+
+            recognition.onerror = (event) => {
+                console.error(event.error);
+                stopMic();
+            };
+
+            recognition.onend = () => {
+                stopMic();
+            };
+        }
+
+        function updateUI() {
+            const t = translations[currentLang];
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('lang-toggle').innerText = t.toggle;
+            document.getElementById('chat-display').innerText = t.welcome;
+            document.getElementById('chat-input').placeholder = t.placeholder;
+            document.getElementById('mic-btn').innerHTML = isListening ? t.micStop : t.micStart;
+            document.getElementById('status-text').innerText = isListening ? t.statusListening : t.statusReady;
+            document.documentElement.dir = t.dir;
+            document.documentElement.lang = currentLang;
+            if (recognition) recognition.lang = t.lang;
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            updateUI();
+        }
+
+        function toggleMic() {
+            if (!recognition) {
+                alert("Speech recognition not supported in this browser.");
+                return;
+            }
+            if (isListening) stopMic();
+            else startMic();
+        }
+
+        function startMic() {
+            isListening = true;
+            recognition.start();
+            document.getElementById('mic-btn').classList.add('active');
+            updateUI();
+        }
+
+        function stopMic() {
+            isListening = false;
+            recognition.stop();
+            document.getElementById('mic-btn').classList.remove('active');
+            updateUI();
+        }
+
+        function send() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            document.getElementById('chat-display').innerText = `You said: "${text}"`;
+            input.value = '';
+            
+            // Mock AI response with TTS
+            setTimeout(() => {
+                const responseText = currentLang === 'en' ? "I heard you! That's a great question." : "لقد سمعتك! هذا سؤال رائع.";
+                document.getElementById('chat-display').innerText = responseText;
+                speak(responseText);
+            }, 1000);
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = translations[currentLang].lang;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>

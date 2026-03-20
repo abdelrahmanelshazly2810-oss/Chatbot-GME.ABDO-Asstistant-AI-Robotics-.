@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GME.ABDO Theme Toggle Example</title>
+    <style>
+        :root {
+            /* Light Theme Variables */
+            --bg-color: #ffffff;
+            --text-color: #1a1a1a;
+            --card-bg: #f5f5f5;
+            --primary-color: #10b981;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Variables */
+            --bg-color: #0a0a0a;
+            --text-color: #ffffff;
+            --card-bg: #1a1a1a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .toggle-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+            background: rgba(0,0,0,0.05);
+            padding: 5px;
+            border-radius: 0.75rem;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            background: transparent;
+            color: #666;
+        }
+
+        .toggle-btn.active {
+            background: var(--bg-color);
+            color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .status {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>GME.ABDO AI</h1>
+        <p>This is a simple theme toggle example for your robotics portfolio.</p>
+        
+        <div class="toggle-container">
+            <button id="day-btn" class="toggle-btn" onclick="setTheme('light')">☀️ DAY</button>
+            <button id="night-btn" class="toggle-btn" onclick="setTheme('dark')">🌙 NIGHT</button>
+        </div>
+
+        <div id="status-msg" class="status">Current Mode: Day</div>
+    </div>
+
+    <script>
+        // 1. Function to set the theme
+        function setTheme(themeName) {
+            // Save to localStorage
+            localStorage.setItem('theme', themeName);
+            
+            // Apply to document
+            document.documentElement.setAttribute('data-theme', themeName);
+            
+            // Update UI
+            updateUI(themeName);
+        }
+
+        // 2. Update button styles and status text
+        function updateUI(themeName) {
+            const dayBtn = document.getElementById('day-btn');
+            const nightBtn = document.getElementById('night-btn');
+            const statusMsg = document.getElementById('status-msg');
+
+            if (themeName === 'dark') {
+                dayBtn.classList.remove('active');
+                nightBtn.classList.add('active');
+                statusMsg.innerText = 'Current Mode: Night';
+            } else {
+                dayBtn.classList.add('active');
+                nightBtn.classList.remove('active');
+                statusMsg.innerText = 'Current Mode: Day';
+            }
+        }
+
+        // 3. Initialize on page load
+        function init() {
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else {
+                // Optional: Auto-switch based on time (7 PM to 7 AM)
+                const hour = new Date().getHours();
+                const defaultTheme = (hour >= 19 || hour < 7) ? 'dark' : 'light';
+                setTheme(defaultTheme);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

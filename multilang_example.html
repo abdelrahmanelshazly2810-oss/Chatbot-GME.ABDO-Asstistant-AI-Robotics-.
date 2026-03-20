@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-language Chatbot Example</title>
+    <style>
+        :root {
+            --primary: #4285F4;
+            --bg: #f8f9fa;
+            --text: #202124;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            transition: direction 0.3s ease;
+        }
+
+        /* RTL Support */
+        [dir="rtl"] {
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .chat-box {
+            background: #f1f3f4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h2 id="title">Chatbot</h2>
+            <button id="lang-toggle" onclick="toggleLanguage()">العربية</button>
+        </div>
+
+        <div class="chat-box" id="chat-display">
+            Hello! How can I help you today?
+        </div>
+
+        <input type="text" id="chat-input" placeholder="Type a message...">
+    </div>
+
+    <script>
+        // 1. Define translations
+        const translations = {
+            en: {
+                title: "AI Chatbot",
+                toggle: "العربية",
+                welcome: "Hello! How can I help you today?",
+                placeholder: "Type a message...",
+                dir: "ltr"
+            },
+            ar: {
+                title: "روبوت الدردشة",
+                toggle: "English",
+                welcome: "مرحباً! كيف يمكنني مساعدتك اليوم؟",
+                placeholder: "اكتب رسالة...",
+                dir: "rtl"
+            }
+        };
+
+        let currentLang = 'en';
+
+        // 2. Function to update UI
+        function updateUI() {
+            const t = translations[currentLang];
+            
+            // Update text content
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('lang-toggle').innerText = t.toggle;
+            document.getElementById('chat-display').innerText = t.welcome;
+            document.getElementById('chat-input').placeholder = t.placeholder;
+
+            // Update document direction (RTL/LTR)
+            document.documentElement.dir = t.dir;
+            document.documentElement.lang = currentLang;
+        }
+
+        // 3. Function to toggle language
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            updateUI();
+        }
+
+        // Initialize
+        updateUI();
+    </script>
+</body>
+</html>

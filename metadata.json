@@ -1,0 +1,8 @@
+{
+  "name": "Chatbot  GME.ABDO - Robotics AI Assistant",
+  "description": "GME.ABDO's high-performance AI assistant for robotics, featuring multimodal hardware vision, ROS2 code generation, and circuit troubleshooting.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
